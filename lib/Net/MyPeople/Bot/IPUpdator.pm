@@ -4,7 +4,7 @@ package Net::MyPeople::Bot::IPUpdator;
 use WWW::Mechanize;
 use Data::Printer;
 use Log::Log4perl qw(:easy);
-Log::Log4perl->easy_init($DEBUG);
+Log::Log4perl->easy_init($ERROR);
 
 # ABSTRACT: Update server IP address setting for MyPeople Bot API. 
 
@@ -55,3 +55,48 @@ sub update{
 	return 1;
 }
 1;
+
+=head1 SYNOPSIS
+
+	use Net::MyPeople::Bot::IPUpdator;
+
+	use Log::Log4perl qw(:easy);
+	Log::Log4perl->easy_init($DEBUG); # You can see all logs.
+
+	my $res = Net::MyPeople::Bot::IPUpdator::update($daumid,$daumpw,$ip);
+	if( $res ){ # OK
+		print "IPADDR is updated to $ip\n";
+		print "OK\n";
+	}
+	else{
+		print "FAIL\n";
+	}
+
+or
+
+	$ mypeople_bot_ipupdate DAUMID DAUMPW IPADDR
+
+=head1 SEE ALSO
+
+=over
+
+=item * 
+
+L<Net::MyPeople::Bot>
+
+=item *
+
+MyPeople : L<https://mypeople.daum.net/mypeople/web/main.do>
+
+=item *
+
+MyPeople Bot API Home : L<http://dna.daum.net/apis/mypeople>
+
+=item *
+
+MyPeople Bot API Buffer Service : L<http://mabook.com:8080/>
+
+=back
+
+
+=cut
