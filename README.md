@@ -4,7 +4,7 @@ Net::MyPeople::Bot::IPUpdator - Update server IP address setting for MyPeople Bo
 
 # VERSION
 
-version 0.001
+version 0.002
 
 # SYNOPSIS
 
@@ -13,9 +13,11 @@ version 0.001
 	use Log::Log4perl qw(:easy);
 	Log::Log4perl->easy_init($DEBUG); # You can see all logs.
 
-	my $res = Net::MyPeople::Bot::IPUpdator::update($daumid,$daumpw,$ip);
-	if( $res ){ # OK
-		print "IPADDR is updated to $ip\n";
+	my $upd = Net::MyPeople::Bot::IPUpdator->new(daum_id=>$daumid,daum_pw=>$daumpw);
+	#my $upd = Net::MyPeople::Bot::IPUpdator->new(daum_id=>$daumid,daum_pw=>$daumpw, myip_url=>['http://GET_MY_IPADDR_URL']);
+	my $nowip = $upd->update($ip);
+	if( $nowip ){ # OK
+		print "IPADDR is updated to $nowip\n";
 		print "OK\n";
 	}
 	else{
