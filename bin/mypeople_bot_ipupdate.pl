@@ -13,9 +13,6 @@ Log::Log4perl->easy_init($ERROR);
 use Getopt::Mini;
 
 use Net::MyPeople::Bot::IPUpdator;
-use LWP::Simple;
-
-use Data::Printer;
 
 my @argv = $ARGV{''}?@{$ARGV{''}}:();
 my ($daumid, $daumpw, $ip) = @argv;
@@ -29,17 +26,18 @@ if( @argv < 2 ){
 }
 
 my $myip = $ARGV{myip};
-my @myips = qw( http://mabook.com:8080/myip http://http://ifconfig.me/ip );
-unshift(@myips,$myip) if( $myip );
 
-while( !$ip ){
-	$ip = get(shift @myips);
+my $updator;
+if($myip){
+	$updator = Net::MyPeople::Bot::IPUpdator->new(daum_id=>$daumid,daum_pw=>$daumpw,myip_url=>$myip);
 }
-DEBUG "MY IP : $ip";
+else{
+	$updator = Net::MyPeople::Bot::IPUpdator->new(daum_id=>$daumid,daum_pw=>$daumpw);
+}
+my $nowip = $updator->update($ip);
 
-my $res = Net::MyPeople::Bot::IPUpdator::update($daumid,$daumpw,$ip);
-if( $res ){
-	print "IPADDR is updated to $ip\n";
+if( $nowip ){
+	print "IPADDR is updated to $nowip\n";
 	print "OK\n";
 }
 else{
@@ -68,6 +66,10 @@ else{
 	OK
 
 	$ mypeopel_bot_ipupdate --myip=http://ifconfig.me/ip DAUMID DAUMPW
+	IPADDR is updated to XXX.XXX.XXX.XXX
+	OK
+
+	$ mypeopel_bot_ipupdate --myip=http://ifconfig.me/ip --myip=http://mabook.com:8080/myip DAUMID DAUMPW
 	IPADDR is updated to XXX.XXX.XXX.XXX
 	OK
 

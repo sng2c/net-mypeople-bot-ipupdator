@@ -1,20 +1,30 @@
-use strict;
-use warnings;
 package Net::MyPeople::Bot::IPUpdator;
+use Moose;
+use namespace::autoclean;
 use WWW::Mechanize;
-use Data::Printer;
 use Log::Log4perl qw(:easy);
+use LWP::Simple;
 Log::Log4perl->easy_init($ERROR);
 
 # ABSTRACT: Update server IP address setting for MyPeople Bot API. 
 
 # VERSION
 
+has myip_url => (is=>'rw', default=>sub{ [qw(http://mabook.com:8080/myip http://ifconfig.me/ip )]; });
+has daum_id => (is=>'rw');
+has daum_pw => (is=>'rw');
+
 our $API_SETTING = 'http://dna.daum.net/myapi/authapi/mypeople';
 
+sub BUILD{
+	my $self = shift;
+	if( ref($self->myip_url) eq '' ){
+		$self->myip_url([$self->myip_url]);
+	}
+}
+
 sub update{
-	my $daumid = shift;
-	my $daumpw = shift;
+	my $self = shift;
 	my $ip = shift;
 
 	my $mech = WWW::Mechanize->new;
@@ -23,8 +33,8 @@ sub update{
 	my $res = $mech->submit_form(
 		form_name=>'loginform',
 		fields => {
-			id=>$daumid,
-			pw=>$daumpw,
+			id=>$self->daum_id,
+			pw=>$self->daum_pw,
 			securityLevel=>1,
 		},
 	);
@@ -43,7 +53,11 @@ sub update{
 	DEBUG $link->url_abs;
 	$res = $mech->get($link->url_abs);
 
-	DEBUG $res->decoded_content;
+	unless( $ip ){
+		$ip = $self->myip;
+	}
+	DEBUG "MY IP : $ip";
+
 	$res = $mech->submit_form(
 		form_name=>'form_auth_new',
 		fields => {
@@ -52,8 +66,20 @@ sub update{
 		});
 
 	DEBUG $res->decoded_content;
-	return 1;
+	return $ip;
 }
+
+sub myip{
+	my $self = shift;
+	foreach my $myip_url (@{$self->myip_url}){
+		next unless $myip_url;
+		DEBUG 'try to get my IP from '.$myip_url;
+		my $ip = get($myip_url);
+		return $ip if $ip;	
+	}
+}
+
+__PACKAGE__->meta->make_immutable;
 1;
 
 =head1 SYNOPSIS
@@ -63,9 +89,11 @@ sub update{
 	use Log::Log4perl qw(:easy);
 	Log::Log4perl->easy_init($DEBUG); # You can see all logs.
 
-	my $res = Net::MyPeople::Bot::IPUpdator::update($daumid,$daumpw,$ip);
-	if( $res ){ # OK
-		print "IPADDR is updated to $ip\n";
+	my $upd = Net::MyPeople::Bot::IPUpdator->new(daum_id=>$daumid,daum_pw=>$daumpw);
+	#my $upd = Net::MyPeople::Bot::IPUpdator->new(daum_id=>$daumid,daum_pw=>$daumpw, myip_url=>['http://GET_MY_IPADDR_URL']);
+	my $nowip = $upd->update($ip);
+	if( $nowip ){ # OK
+		print "IPADDR is updated to $nowip\n";
 		print "OK\n";
 	}
 	else{
