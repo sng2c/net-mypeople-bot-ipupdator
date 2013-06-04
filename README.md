@@ -15,7 +15,12 @@ version 0.002
 
 	my $upd = Net::MyPeople::Bot::IPUpdator->new(daum_id=>$daumid,daum_pw=>$daumpw);
 	#my $upd = Net::MyPeople::Bot::IPUpdator->new(daum_id=>$daumid,daum_pw=>$daumpw, myip_url=>['http://GET_MY_IPADDR_URL']);
-	my $nowip = $upd->update($ip);
+	
+
+	my $nowip = $upd->update(); # update with PUBLIC IP.
+
+	$nowip = $upd->update($ip); # update with specified IP.
+
 	if( $nowip ){ # OK
 		print "IPADDR is updated to $nowip\n";
 		print "OK\n";
